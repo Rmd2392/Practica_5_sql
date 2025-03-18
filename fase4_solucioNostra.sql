@@ -55,6 +55,11 @@ where
     and pilot.hores_vol > 7000
     and personal.sou > 53000
     and vol.descripcio like '%delayed%';
+  -- La nota de 8.5 es porque fallamos en esta pregunta y creo que es porque sencillamente olvidamos de colocar el order by
+  order by 
+    avio.companyia
+    vol.data
+    vol.codi;
 
 -- Pregunta 4
 select
