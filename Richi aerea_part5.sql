@@ -8,80 +8,149 @@
 
 -- Pregunta 1
 
+🔹 Texto original del enunciado
+
+    Mostra la ciutat destí i quants vols han arribat durant l’any 2023 però nomès si han arribat almenys 800 vols.
+    Ordena el resultat pel número de vols el ordre decreixent.
+
+🔹 Requisitos resumidos
+
+    Mostrar ciudad de destino
+
+    Contar los vuelos que llegaron durante 2023
+
+    Solo ciudades con mínimo 800 vuelos
+
+    Ordenar por número de vuelos descendente
+
 select 
-    aeroport.ciutat as ciutat_desti,  -- Se obtiene la ciudad de destino
-    count(vol.codi) as total_vols  -- Se cuenta la cantidad de vuelos que llegaron a esa ciudad
+  (select ciutat from aeroport where aeroport.codi = vol.aeroport_desti) as ciutat_desti,  -- Obtener el nombre de la ciudad de destino
+  count(*) as total_vols  -- Contar cuántos vuelos llegaron a esa ciudad
 from vol
-join aeroport on vol.aeroport_desti = aeroport.codi  -- Se une 'vol' con 'aeroport' para obtener la ciudad de destino
-where year(vol.data) = 2023  -- Solo vuelos del año 2023
-group by aeroport.ciutat  -- Se agrupa por ciudad de destino para contar los vuelos de cada una
-having count(vol.codi) >= 800  -- Solo se incluyen ciudades con al menos 800 vuelos
-order by total_vols desc;  -- Se ordena de mayor a menor número de vuelos
+where year(data) = 2023  -- Solo considerar vuelos del año 2023
+group by aeroport_desti  -- Agrupar por código de aeropuerto destino
+having count(*) >= 800  -- Solo mostrar los aeropuertos con al menos 800 vuelos
+order by total_vols desc;  -- Ordenar de mayor a menor número de vuelos
 
 
 -- Pregunta 2
 
+🔹 Texto original del enunciado
+
+    Mostra el nom de TOTES les companyies que siguin espanyoles, incloent les que no tinguin avions o no hagin
+    fet cap vol (s’ha de visualitzar com companyia) i el número de vols (s’ha de visualitzar com total_vols)
+    que han operat, també volem saber la durada promig dels seus vols així com la data de l’últim vol que tenim.
+    Ordena el resultat segons el nom de la companyia.
+
+🔹 Requisitos resumidos
+
+    Mostrar todas las compañías españolas
+
+    Aunque no tengan vuelos
+
+    Mostrar: nombre, nº de vuelos, duración media y fecha último vuelo
+
+    Ordenar por nombre
+
 select 
-    companyia.nom as companyia,  -- Se obtiene el nombre de la compañía
-    count(vol.codi) as total_vols,  -- Se cuenta la cantidad de vuelos operados
-    avg(vol.durada) as durada_promig,  -- Se obtiene la duración promedio de los vuelos
-    max(vol.data) as ultim_vol  -- Se obtiene la fecha del último vuelo
-from companyia
-left join avio on companyia.nom = avio.companyia  -- Se une con 'avio' para incluir compañías sin aviones
-left join vol on avio.num_serie = vol.avio  -- Se une con 'vol' para incluir compañías sin vuelos
-where companyia.pais = 'Spain'  -- Solo compañías españolas
-group by companyia.nom  -- Se agrupa por compañía para calcular sus valores
-order by companyia.nom;  -- Se ordena alfabéticamente por nombre de la compañía
+  c.nom as companyia,  -- Mostrar el nombre de la compañía
+  (select count(*) from vol where avio in 
+      (select num_serie from avio where companyia = c.nom)) as total_vols,  -- Contar cuántos vuelos operó la compañía
+  (select avg(durada) from vol where avio in 
+      (select num_serie from avio where companyia = c.nom)) as durada_promig,  -- Calcular la duración promedio de los vuelos
+  (select max(data) from vol where avio in 
+      (select num_serie from avio where companyia = c.nom)) as ultim_vol  -- Obtener la fecha del vuelo más reciente
+from companyia c
+where pais = 'Spain'  -- Solo mostrar compañías españolas
+order by c.nom;  -- Ordenar alfabéticamente por el nombre de la compañía
 
 
 -- Pregunta 3
 
+🔹 Texto original del enunciado
+
+    Mostra quants vols s’han fet de cada companyia espanyola cada mes durant l’any 2023. Ordena el resultat per any,
+    mes i companyia.
+
+🔹 Requisitos resumidos
+
+    Vuelos por mes y compañía
+
+    Solo compañías españolas
+
+    Año 2023
+
+    Ordenar por año, mes, compañía
+
 select 
-    year(vol.data) as any,  -- Se obtiene el año del vuelo
-    month(vol.data) as mes,  -- Se obtiene el mes del vuelo
-    companyia.nom as companyia,  -- Se obtiene el nombre de la compañía
-    count(vol.codi) as total_vols  -- Se cuenta la cantidad de vuelos operados
+  year(data) as any,  -- Obtener el año del vuelo
+  month(data) as mes,  -- Obtener el mes del vuelo
+  (select companyia from avio where num_serie = vol.avio) as companyia,  -- Obtener el nombre de la compañía del avión
+  count(*) as total_vols  -- Contar cuántos vuelos realizó esa compañía ese mes
 from vol
-join avio on vol.avio = avio.num_serie  -- Se une con 'avio' para obtener la compañía del avión
-join companyia on avio.companyia = companyia.nom  -- Se une con 'companyia' para obtener el nombre de la compañía
-where companyia.pais = 'Spain'  -- Solo compañías españolas
-  and year(vol.data) = 2023  -- Solo vuelos del año 2023
-group by any, mes, companyia.nom  -- Se agrupa por año, mes y compañía
-order by any, mes, companyia.nom;  -- Se ordena por año, mes y compañía
+where year(data) = 2023  -- Solo vuelos del año 2023
+  and (select pais from companyia 
+       where nom = (select companyia from avio where num_serie = vol.avio)) = 'Spain'  -- Solo compañías españolas
+group by any, mes, companyia  -- Agrupar por año, mes y compañía
+order by any, mes, companyia;  -- Ordenar por año, luego mes, luego compañía
 
 
 -- Pregunta 4
 
+🔹 Texto original del enunciado
+
+    Mostra el codi, el nom i el país de l’aeroport origen, el nom i el país de l’aeroport destí dels vols
+    que es facin a la mateixa data, tinguin el mateix aeroport origen i mateix aeroport destí que el vol 482739,
+    evidentment sense incloure a aquest vol.
+
+🔹 Requisitos resumidos
+
+    Comparar con vuelo 482739
+
+    Coincidir en fecha, origen y destino
+
+    Excluir el vuelo original
+
+    Mostrar código, nombre y país de origen y destino
+
 select 
-    vol.codi,
-    aeroport_origen.nom as aeroport_origen,
-    aeroport_origen.pais as pais_origen,
-    aeroport_desti.nom as aeroport_desti,
-    aeroport_desti.pais as pais_desti
+  codi,  -- Mostrar el código del vuelo
+  (select nom from aeroport where codi = aeroport_origen) as aeroport_origen,  -- Obtener nombre del aeropuerto origen
+  (select pais from aeroport where codi = aeroport_origen) as pais_origen,  -- Obtener país del aeropuerto origen
+  (select nom from aeroport where codi = aeroport_desti) as aeroport_desti,  -- Obtener nombre del aeropuerto destino
+  (select pais from aeroport where codi = aeroport_desti) as pais_desti  -- Obtener país del aeropuerto destino
 from vol
-join aeroport aeroport_origen on vol.aeroport_origen = aeroport_origen.codi
-join aeroport aeroport_desti on vol.aeroport_desti = aeroport_desti.codi
-where vol.data = (select data from vol where codi = 482739)
-  and vol.aeroport_origen = (select aeroport_origen from vol where codi = 482739)
-  and vol.aeroport_desti = (select aeroport_desti from vol where codi = 482739)
-  and vol.codi <> 482739;  -- Excluimos el vuelo 482739
+where data = (select data from vol where codi = 482739)  -- Coincidir fecha con el vuelo 482739
+  and aeroport_origen = (select aeroport_origen from vol where codi = 482739)  -- Coincidir aeropuerto origen
+  and aeroport_desti = (select aeroport_desti from vol where codi = 482739)  -- Coincidir aeropuerto destino
+  and codi <> 482739;  -- Excluir el vuelo original
 
 
 -- Pregunta 5
 
+🔹 Texto original del enunciado
+
+    Mostra el nom de la companyia i quants vols s’han fet de les companyies que tinguin més vols que la
+    companyia “British Airways”. Ordena el resultat pel número de vols.
+
+🔹 Requisitos resumidos
+
+    Contar vuelos por compañía
+
+    Solo las que tengan más que British Airways
+
+    Mostrar nombre y número de vuelos
+
+    Ordenar por número de vuelos descendente
+
 select 
-    companyia.nom as companyia,  -- Se obtiene el nombre de la compañía
-    count(vol.codi) as total_vols  -- Se cuenta la cantidad de vuelos operados
-from vol
-join avio on vol.avio = avio.num_serie  -- Se une 'vol' con 'avio' para obtener la compañía del avión
-join companyia on avio.companyia = companyia.nom  -- Se une 'avio' con 'companyia' para obtener el nombre de la compañía
-group by companyia.nom  -- Se agrupa por compañía para contar los vuelos de cada una
-having count(vol.codi) > (  -- Se filtran las compañías con más vuelos que British Airways
-    select count(vol.codi)  -- Se cuenta el número de vuelos operados por British Airways
-    from vol
-    join avio on vol.avio = avio.num_serie
-    join companyia on avio.companyia = companyia.nom
-    where companyia.nom = 'British Airways'
-)
-order by total_vols desc;  -- Se ordena por el número de vuelos en orden descendente
+  nom as companyia,  -- Mostrar el nombre de la compañía
+  (select count(*) from vol where avio in 
+      (select num_serie from avio where companyia = c.nom)) as total_vols  -- Contar los vuelos de esa compañía
+from companyia c
+where (select count(*) from vol where avio in 
+         (select num_serie from avio where companyia = c.nom)) >  -- Comparar su total de vuelos con...
+      (select count(*) from vol where avio in 
+         (select num_serie from avio where companyia = 'British Airways'))  -- ...los de British Airways
+order by total_vols desc;  -- Ordenar de mayor a menor cantidad de vuelos
 
