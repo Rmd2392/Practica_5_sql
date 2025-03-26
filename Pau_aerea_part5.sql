@@ -84,4 +84,4 @@ WHERE (SELECT COUNT(*) FROM vol WHERE vol.avio IN
       (SELECT COUNT(*) FROM vol WHERE vol.avio IN 
             (SELECT avio.num_serie FROM avio WHERE avio.companyia = 'British Airways')
        )
-ORDER BY total_vols DESC;
+ORDER BY total_vols;
