@@ -9,7 +9,7 @@
 -- Pregunta 1
 
 select 
-  (select ciutat from aeroport where aeroport.codi = vol.aeroport_desti) as ciutat_desti,
+  (select ciutat from aeroport where aeroport.codi = vol.aeroport_desti) as ciutat
   count(*) as total_vols
 from vol
 where year(data) = 2023

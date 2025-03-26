@@ -53,13 +53,13 @@ order by total_vols desc;  -- Ordenar de mayor a menor número de vuelos
     Ordenar por nombre
 
 select 
-  c.nom as companyia,  -- Mostrar el nombre de la compañía
+  c.nom as nom,  -- Mostrar el nombre de la compañía
   (select count(*) from vol where avio in 
       (select num_serie from avio where companyia = c.nom)) as total_vols,  -- Contar cuántos vuelos operó la compañía
   (select avg(durada) from vol where avio in 
-      (select num_serie from avio where companyia = c.nom)) as durada_promig,  -- Calcular la duración promedio de los vuelos
+      (select num_serie from avio where companyia = c.nom)) as vol_promig,  -- Calcular la duración promedio de los vuelos
   (select max(data) from vol where avio in 
-      (select num_serie from avio where companyia = c.nom)) as ultim_vol  -- Obtener la fecha del vuelo más reciente
+      (select num_serie from avio where companyia = c.nom)) as last_vol  -- Obtener la fecha del vuelo más reciente
 from companyia c
 where pais = 'Spain'  -- Solo mostrar compañías españolas
 order by c.nom;  -- Ordenar alfabéticamente por el nombre de la compañía
