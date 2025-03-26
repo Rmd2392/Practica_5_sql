@@ -20,6 +20,7 @@ HAVING COUNT(*) >= 800
 ORDER BY total_vols DESC;
 
 -- Pregunta 2
+
 SELECT 
     companyia.nom AS nom,
     COALESCE(
@@ -46,20 +47,35 @@ ORDER BY companyia.nom;
 
 
 -- Pregunta 3
+
 SELECT 
-    YEAR(vol.data) AS any, 
-    MONTH(vol.data) AS mes, 
-    companyia.nom AS nom, 
-    COUNT(vol.codi) AS total_vols
-FROM companyia
-LEFT JOIN avio ON avio.companyia = companyia.nom
-LEFT JOIN vol ON vol.avio = avio.num_serie
-WHERE companyia.pais = 'Spain' 
-AND vol.data BETWEEN '2023-01-01' AND '2023-12-31'
-GROUP BY any, mes, companyia.nom
-ORDER BY any, mes, companyia.nom;
+  YEAR(data) AS anyo,
+  MONTH(data) AS mes,
+  (SELECT companyia.nom 
+   FROM companyia
+   WHERE companyia.nom = (
+       SELECT avio.companyia 
+       FROM avio 
+       WHERE avio.num_serie = vol.avio
+   )
+  ) AS nom,
+  COUNT(*) AS total_vols
+FROM vol
+WHERE avio IN (
+    SELECT num_serie
+    FROM avio
+    WHERE companyia IN (
+        SELECT nom
+        FROM companyia
+        WHERE pais = 'Spain'
+    )
+)
+AND data BETWEEN '2023-01-01' AND '2023-12-31'
+GROUP BY anyo, mes, nom
+ORDER BY anyo, mes, nom;
 
 -- Pregunta 4
+
 SELECT 
     aeroport_origen AS codi_origen,
     (SELECT aeroport.nom FROM aeroport WHERE aeroport.codi = vol.aeroport_origen) AS nom_origen,
@@ -73,6 +89,7 @@ AND data = (SELECT data FROM vol WHERE codi = 482739)
 AND codi <> 482739;
 
 -- Pregunta 5
+
 SELECT companyia.nom AS nom, 
        (SELECT COUNT(*) FROM vol WHERE vol.avio IN 
             (SELECT avio.num_serie FROM avio WHERE avio.companyia = companyia.nom)
