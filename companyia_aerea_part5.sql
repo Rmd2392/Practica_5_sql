@@ -9,23 +9,26 @@
 -- Pregunta 1
 
 select 
-    aeroport.ciutat as ciutat_desti,
-    count(vol.codi) as total_vols
+  (select ciutat from aeroport where aeroport.codi = vol.aeroport_desti) as ciutat_desti,
+  count(*) as total_vols
 from vol
-join aeroport on vol.aeroport_desti = aeroport.codi
-where year(vol.data) = 2023
-group by aeroport.ciutat
-having count(vol.codi) >= 800
+where year(data) = 2023
+group by aeroport_desti
+having count(*) >= 800
 order by total_vols desc;
+
 
 -- Pregunta 2
 select 'No ho sé';
 
+
 -- Pregunta 3
 select 'No ho sé';
 
+
 -- Pregunta 4
 select 'No ho sé';
+
 
 -- Pregunta 5
 select 'No ho sé';

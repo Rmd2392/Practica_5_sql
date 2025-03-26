@@ -3,7 +3,7 @@
     CFGS Desenvolupament d'aplicacions web (DAW1A)
     Mòdul: 0484 Bases de dades. 
     AUTORS: Ricardo Martín Díaz & Pau Bosch Pérez
-    DATA: 18/03/2025
+    DATA: 25/03/2025
 ****************************************************** */
 
 -- Pregunta 1
