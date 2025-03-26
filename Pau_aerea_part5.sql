@@ -8,16 +8,16 @@
 
 -- Pregunta 1
 
-SELECT ciutat, num_vols
-FROM (
-    SELECT a.ciutat, COUNT(v.codi) AS num_vols
-    FROM vol v, aeroport a
-    WHERE v.aeroport_desti = a.codi
-    AND YEAR(v.data) = 2023
-    GROUP BY a.ciutat
-) AS vols_destí
-WHERE num_vols >= 800
-ORDER BY num_vols DESC;
+SELECT 
+  (SELECT ciutat
+  FROM aeroport 
+  WHERE aeroport.codi = vol.aeroport_desti) AS ciutat,
+  COUNT(*) AS total_vols
+FROM vol
+WHERE YEAR(DATA) = 2023
+GROUP BY aeroport_desti
+HAVING COUNT(*) >= 800
+ORDER BY total_vols DESC;
 
 -- Pregunta 2
 SELECT 
@@ -65,7 +65,7 @@ SELECT
     (SELECT aeroport.nom FROM aeroport WHERE aeroport.codi = vol.aeroport_origen) AS nom_origen,
     (SELECT aeroport.pais FROM aeroport WHERE aeroport.codi = vol.aeroport_origen) AS pais_origen,
     (SELECT aeroport.nom FROM aeroport WHERE aeroport.codi = vol.aeroport_desti) AS nom_desti,
-    (SELECT aeroport.pais FROM aeroport WHERE aeroport.codi = vol.aeroport_desti) AS pais_desti
+    (SELECT aeroport.pais FROM aeroport WHERE aeroport.codi = vol.aeroport_desti) AS pais_dest
 FROM vol
 WHERE aeroport_origen = (SELECT aeroport_origen FROM vol WHERE codi = 482739)
 AND aeroport_desti = (SELECT aeroport_desti FROM vol WHERE codi = 482739)
